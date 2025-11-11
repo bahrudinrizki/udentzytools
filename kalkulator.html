@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Keuangan - Tools Udin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Kembali ke Tools Udin</a>
+    <h1>💰 Kalkulator Keuangan</h1>
+
+    <div class="form">
+      <select id="tipe">
+        <option value="pemasukan">Pemasukan</option>
+        <option value="pengeluaran">Pengeluaran</option>
+      </select>
+
+      <input type="text" id="deskripsi" placeholder="Deskripsi (contoh: Gaji, Makan)">
+      <input type="number" id="jumlah" placeholder="Jumlah (Rp)">
+      <button onclick="tambahTransaksi()">Tambah</button>
+    </div>
+
+    <div class="summary">
+      <p><b>Total Pemasukan:</b> <span id="totalPemasukan">Rp 0</span></p>
+      <p><b>Total Pengeluaran:</b> <span id="totalPengeluaran">Rp 0</span></p>
+      <p><b>Saldo Akhir:</b> <span id="saldoAkhir">Rp 0</span></p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Jenis</th>
+          <th>Deskripsi</th>
+          <th>Jumlah (Rp)</th>
+        </tr>
+      </thead>
+      <tbody id="tabelTransaksi"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let totalPemasukan = 0;
+    let totalPengeluaran = 0;
+
+    function tambahTransaksi() {
+      const tipe = document.getElementById('tipe').value;
+      const deskripsi = document.getElementById('deskripsi').value.trim();
+      const jumlah = parseInt(document.getElementById('jumlah').value);
+
+      if (!deskripsi || isNaN(jumlah) || jumlah <= 0) {
+        alert('Isi deskripsi dan jumlah dengan benar!');
+        return;
+      }
+
+      const tabel = document.getElementById('tabelTransaksi');
+      const baris = tabel.insertRow();
+
+      const cellTipe = baris.insertCell(0);
+      const cellDeskripsi = baris.insertCell(1);
+      const cellJumlah = baris.insertCell(2);
+
+      cellTipe.textContent = tipe.charAt(0).toUpperCase() + tipe.slice(1);
+      cellDeskripsi.textContent = deskripsi;
+      cellJumlah.textContent = jumlah.toLocaleString('id-ID');
+
+      if (tipe === 'pemasukan') {
+        cellTipe.style.color = 'limegreen';
+        cellJumlah.style.color = 'limegreen';
+        totalPemasukan += jumlah;
+      } else {
+        cellTipe.style.color = 'crimson';
+        cellJumlah.style.color = 'crimson';
+        totalPengeluaran += jumlah;
+      }
+
+      const saldo = totalPemasukan - totalPengeluaran;
+
+      document.getElementById('totalPemasukan').textContent = 'Rp ' + totalPemasukan.toLocaleString('id-ID');
+      document.getElementById('totalPengeluaran').textContent = 'Rp ' + totalPengeluaran.toLocaleString('id-ID');
+      document.getElementById('saldoAkhir').textContent = 'Rp ' + saldo.toLocaleString('id-ID');
+
+      document.getElementById('deskripsi').value = '';
+      document.getElementById('jumlah').value = '';
+    }
+  </script>
+</body>
+</html>

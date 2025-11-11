@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balance Checker - Tools Udin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="back-btn">← Kembali</a>
+    <h1>⚖️ Balance Checker</h1>
+
+    <p>Masukkan jumlah pemasukan dan pengeluaranmu, lalu klik "Cek Balance".</p>
+
+    <input type="number" id="pemasukan" placeholder="Total Pemasukan (Rp)">
+    <input type="number" id="pengeluaran" placeholder="Total Pengeluaran (Rp)">
+    <button onclick="cekBalance()">Cek Balance</button>
+
+    <div class="result" id="hasilBalance"></div>
+  </div>
+
+  <script>
+    function cekBalance() {
+      const pemasukan = parseInt(document.getElementById('pemasukan').value);
+      const pengeluaran = parseInt(document.getElementById('pengeluaran').value);
+      const hasilDiv = document.getElementById('hasilBalance');
+
+      if (isNaN(pemasukan) || isNaN(pengeluaran)) {
+        hasilDiv.innerHTML = '<p style="color:gray;">⚠️ Masukkan angka yang valid untuk pemasukan dan pengeluaran.</p>';
+        return;
+      }
+
+      const selisih = pemasukan - pengeluaran;
+      let pesan = '';
+      let warna = '';
+
+      if (selisih > 0) {
+        pesan = `✅ Kamu memiliki surplus sebesar Rp ${selisih.toLocaleString('id-ID')}. Keuanganmu sehat!`;
+        warna = 'green';
+      } else if (selisih < 0) {
+        pesan = `⚠️ Kamu mengalami defisit sebesar Rp ${Math.abs(selisih).toLocaleString('id-ID')}. Kurangi pengeluaranmu!`;
+        warna = 'red';
+      } else {
+        pesan = `⚖️ Keuanganmu seimbang! Tidak ada surplus atau defisit.`;
+        warna = 'blue';
+      }
+
+      hasilDiv.innerHTML = `<p style="color:${warna}; font-weight:bold;">${pesan}</p>`;
+    }
+  </script>
+</body>
+</html>

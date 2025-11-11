@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debit & Kredit - Tools Udin</title>
+<style>
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: Arial, sans-serif;
+  }
+  .container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background-color: #1f1f1f;
+  }
+  h1, p {
+    text-align: center;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  th, td {
+    border: 1px solid #333;
+    padding: 8px;
+  }
+  th {
+    background-color: #2f2f2f;
+  }
+  tfoot td {
+    font-weight: bold;
+    background-color: #2a2a2a;
+  }
+  input, button {
+    width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #2c2c2c;
+    color: #f1f1f1;
+  }
+  button {
+    cursor: pointer;
+    background-color: #444;
+    font-weight: bold;
+  }
+  button:hover { background-color: #666; }
+  .reset-btn { background-color: crimson; margin-top: 15px; }
+  .reset-btn:hover { background-color: #ff4d4d; }
+  .back-btn { display: inline-block; text-decoration: none; color: #aaa; margin-bottom: 15px; font-weight: bold; }
+  .back-btn:hover { color: #fff; }
+  #status { text-align: center; font-weight: bold; margin-top: 20px; font-size: 1.1em; }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="index.html" class="back-btn">← Kembali ke Tools Udin</a>
+  <h1>💳 Debit & Kredit Pintar</h1>
+  <p>Input akun dan nilai, cek neraca, lihat akun yang menyebabkan selisih.</p>
+
+  <h3>Debit</h3>
+  <table id="tabelDebit">
+    <thead><tr><th>Akun</th><th>Nilai (Rp)</th></tr></thead>
+    <tbody></tbody>
+    <tfoot><tr><td>Total Debit</td><td id="totalDebit">0</td></tr></tfoot>
+  </table>
+  <input type="text" id="namaDebit" placeholder="Nama akun debit">
+  <input type="number" id="nilaiDebit" placeholder="Nilai (Rp)">
+  <button onclick="tambahDebit()">Tambah Debit</button>
+
+  <h3>Kredit</h3>
+  <table id="tabelKredit">
+    <thead><tr><th>Akun</th><th>Nilai (Rp)</th></tr></thead>
+    <tbody></tbody>
+    <tfoot><tr><td>Total Kredit</td><td id="totalKredit">0</td></tr></tfoot>
+  </table>
+  <input type="text" id="namaKredit" placeholder="Nama akun kredit">
+  <input type="number" id="nilaiKredit" placeholder="Nilai (Rp)">
+  <button onclick="tambahKredit()">Tambah Kredit</button>
+
+  <button class="reset-btn" onclick="resetSemua()">🗑️ Hapus Semua Data</button>
+  <div id="status"></div>
+</div>
+
+<script>
+let debitList = [];
+let kreditList = [];
+let totalDebit = 0;
+let totalKredit = 0;
+
+function tambahDebit() {
+  const nama = document.getElementById('namaDebit').value.trim();
+  const nilai = parseFloat(document.getElementById('nilaiDebit').value);
+  if (!nama || isNaN(nilai) || nilai <= 0) { alert('Isi nama akun dan nilai dengan benar!'); return; }
+
+  debitList.push({nama, nilai});
+  const tabel = document.querySelector('#tabelDebit tbody');
+  const baris = tabel.insertRow();
+  baris.insertCell(0).textContent = nama;
+  baris.insertCell(1).textContent = nilai.toLocaleString('id-ID');
+  
+  totalDebit += nilai;
+  document.getElementById('totalDebit').textContent = totalDebit.toLocaleString('id-ID');
+  document.getElementById('namaDebit').value = '';
+  document.getElementById('nilaiDebit').value = '';
+  updateStatus();
+}
+
+function tambahKredit() {
+  const nama = document.getElementById('namaKredit').value.trim();
+  const nilai = parseFloat(document.getElementById('nilaiKredit').value);
+  if (!nama || isNaN(nilai) || nilai <= 0) { alert('Isi nama akun dan nilai dengan benar!'); return; }
+
+  kreditList.push({nama, nilai});
+  const tabel = document.querySelector('#tabelKredit tbody');
+  const baris = tabel.insertRow();
+  baris.insertCell(0).textContent = nama;
+  baris.insertCell(1).textContent = nilai.toLocaleString('id-ID');
+  
+  totalKredit += nilai;
+  document.getElementById('totalKredit').textContent = totalKredit.toLocaleString('id-ID');
+  document.getElementById('namaKredit').value = '';
+  document.getElementById('nilaiKredit').value = '';
+  updateStatus();
+}
+
+function updateStatus() {
+  const status = document.getElementById('status');
+  if (totalDebit === 0 && totalKredit === 0) { status.textContent = ''; return; }
+  
+  const selisih = totalDebit - totalKredit;
+
+  if (Math.abs(selisih) < 1) {
+    status.innerHTML = "✅ Neraca Seimbang!";
+    status.style.color = "limegreen";
+  } else {
+    let message = '';
+    if (selisih > 0) {
+      message = `⚠️ Tidak Seimbang! Kekurangan di sisi Kredit: Rp ${selisih.toLocaleString('id-ID')}<br>Akun debit yang menyebabkan selisih: ${debitList.map(a=>a.nama).join(', ')}`;
+    } else {
+      message = `⚠️ Tidak Seimbang! Kekurangan di sisi Debit: Rp ${Math.abs(selisih).toLocaleString('id-ID')}<br>Akun kredit yang menyebabkan selisih: ${kreditList.map(a=>a.nama).join(', ')}`;
+    }
+    status.innerHTML = message;
+    status.style.color = "crimson";
+  }
+}
+
+function resetSemua() {
+  debitList = [];
+  kreditList = [];
+  totalDebit = 0;
+  totalKredit = 0;
+  document.querySelector('#tabelDebit tbody').innerHTML = '';
+  document.getElementById('totalDebit').textContent = '0';
+  document.querySelector('#tabelKredit tbody').innerHTML = '';
+  document.getElementById('totalKredit').textContent = '0';
+  updateStatus();
+}
+</script>
+</body>
+</html>
