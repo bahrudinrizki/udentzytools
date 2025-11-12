@@ -1,168 +1,651 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Debit & Kredit - Tools Udin</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Neraca Bisnis (Tabs) - Tools Udin</title>
 <style>
-  body {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: Arial, sans-serif;
+  :root{
+    --bg:#0f0f10; --card:#151515; --muted:#bdbdbd; --panel:#222;
+    --accent:#4CAF50; --accent-2:#2ea3ff; --danger:#ff4d4d; --glass:#1a1a1a;
   }
-  .container {
-    max-width: 700px;
-    margin: 40px auto;
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid #333;
-    background-color: #1f1f1f;
+  /* reset & body */
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter, "Segoe UI", Arial, sans-serif;background:var(--bg);color:#e6e6e6;padding:12px;}
+  .container{max-width:1200px;margin:12px auto;padding:16px;border-radius:10px;background:var(--card);box-shadow:0 8px 30px rgba(0,0,0,0.6);}
+  h1{margin:0 0 6px;text-align:center}
+  .lead{color:var(--muted);text-align:center;margin:6px 0 14px}
+  .top-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .guide{background:var(--glass);padding:10px;border-radius:8px;border:1px solid #222;color:var(--muted);font-size:14px}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+  .tab{
+    padding:8px 12px;border-radius:8px;background:#181818;border:1px solid #262626;color:#ddd;cursor:pointer;font-weight:600;
   }
-  h1, p {
-    text-align: center;
+  .tab.active{background:linear-gradient(180deg,#232323,#1b1b1b);border-color:var(--accent);color:var(--accent);box-shadow:0 4px 8px rgba(0,0,0,0.6)}
+  .tab.small{padding:6px 9px;font-weight:500;font-size:13px}
+
+  /* layout */
+  .content{margin-top:12px}
+  .panel{display:none}
+  .panel.active{display:block}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .col{flex:1 1 360px;min-width:280px}
+  .card{background:var(--glass);padding:12px;border-radius:8px;border:1px solid #252525}
+  label{display:block;margin-top:8px;color:var(--muted);font-size:13px}
+  input[type="text"], input[type="number"], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid #2a2a2a;background:#121212;color:#eee;font-size:14px}
+  button{padding:8px 10px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-weight:700}
+  button.secondary{background:#3a3a3a}
+  button.danger{background:var(--danger)}
+  .btn-icon{background:#2b2b2b;padding:6px;border-radius:6px;border:1px solid #333;color:#fff;cursor:pointer}
+  .small{font-size:13px;color:var(--muted)}
+  .table-scroll{overflow:auto;max-height:320px;margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px;border:1px solid #262626;text-align:left;vertical-align:middle}
+  th{background:#1f1f1f;color:#ddd}
+  tfoot td{background:#171717;font-weight:700}
+  .right{text-align:right}
+  .muted{color:var(--muted)}
+  .status{margin-top:10px;padding:10px;border-radius:8px;background:#0f0f10;border:1px solid #222}
+  .ok{color:limegreen;font-weight:700}
+  .bad{color:crimson;font-weight:700}
+  .highlight-missing{background:linear-gradient(90deg, rgba(255,77,77,0.06), transparent)}
+  .acct-type{font-size:12px;padding:4px 6px;border-radius:6px;background:#232323;color:var(--muted);display:inline-block}
+
+  /* responsive tweaks */
+  @media(max-width:980px){ .row{flex-direction:column} .col{min-width:unset} }
+  @media(max-width:420px){
+    .container{padding:10px}
+    .tab{font-size:13px;padding:6px 9px}
+    th,td{padding:6px;font-size:12px}
+    input,button{font-size:13px;padding:8px}
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 10px;
-  }
-  th, td {
-    border: 1px solid #333;
-    padding: 8px;
-  }
-  th {
-    background-color: #2f2f2f;
-  }
-  tfoot td {
-    font-weight: bold;
-    background-color: #2a2a2a;
-  }
-  input, button {
-    width: 100%;
-    margin-top: 5px;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #444;
-    background-color: #2c2c2c;
-    color: #f1f1f1;
-  }
-  button {
-    cursor: pointer;
-    background-color: #444;
-    font-weight: bold;
-  }
-  button:hover { background-color: #666; }
-  .reset-btn { background-color: crimson; margin-top: 15px; }
-  .reset-btn:hover { background-color: #ff4d4d; }
-  .back-btn { display: inline-block; text-decoration: none; color: #aaa; margin-bottom: 15px; font-weight: bold; }
-  .back-btn:hover { color: #fff; }
-  #status { text-align: center; font-weight: bold; margin-top: 20px; font-size: 1.1em; }
 </style>
 </head>
 <body>
-<div class="container">
-  <a href="index.html" class="back-btn">← Kembali ke Tools Udin</a>
-  <h1>💳 Debit & Kredit Pintar</h1>
-  <p>Input akun dan nilai, cek neraca, lihat akun yang menyebabkan selisih.</p>
+  <div class="container">
+    <h1>🏦 Neraca Bisnis — Tools Udin</h1>
+    <p class="lead">Jurnal, Penyesuaian, Kertas Kerja, Laba Rugi, Perubahan Modal, dan Neraca — satu halaman (tab).</p>
 
-  <h3>Debit</h3>
-  <table id="tabelDebit">
-    <thead><tr><th>Akun</th><th>Nilai (Rp)</th></tr></thead>
-    <tbody></tbody>
-    <tfoot><tr><td>Total Debit</td><td id="totalDebit">0</td></tr></tfoot>
-  </table>
-  <input type="text" id="namaDebit" placeholder="Nama akun debit">
-  <input type="number" id="nilaiDebit" placeholder="Nilai (Rp)">
-  <button onclick="tambahDebit()">Tambah Debit</button>
+    <div class="top-row">
+      <div class="guide small">
+        <b>Petunjuk Singkat:</b>
+        <ol style="padding-left:18px;margin:6px 0 0">
+          <li>Buat akun terlebih dahulu (Asset/Liability/Equity/Revenue/Expense/Drawing).</li>
+          <li>Masuk ke tab <b>Jurnal</b> untuk input transaksi (debit & kredit).</li>
+          <li>Masuk ke <b>Penyesuaian</b> jika perlu menambah adjusting entries.</li>
+          <li>Tekan <b>Worksheet → Generate</b> untuk menghitung otomatis Laporan & Neraca.</li>
+          <li>Jika tidak seimbang, lihat <b>Catatan Ketidakseimbangan</b> di tab Worksheet.</li>
+        </ol>
+      </div>
 
-  <h3>Kredit</h3>
-  <table id="tabelKredit">
-    <thead><tr><th>Akun</th><th>Nilai (Rp)</th></tr></thead>
-    <tbody></tbody>
-    <tfoot><tr><td>Total Kredit</td><td id="totalKredit">0</td></tr></tfoot>
-  </table>
-  <input type="text" id="namaKredit" placeholder="Nama akun kredit">
-  <input type="number" id="nilaiKredit" placeholder="Nilai (Rp)">
-  <button onclick="tambahKredit()">Tambah Kredit</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="small muted">Theme:</div>
+        <div class="small acct-type">Dark / Mobile-ready</div>
+      </div>
+    </div>
 
-  <button class="reset-btn" onclick="resetSemua()">🗑️ Hapus Semua Data</button>
-  <div id="status"></div>
-</div>
+    <!-- TABS -->
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="accounts">Akun</div>
+      <div class="tab" data-tab="journal">Jurnal</div>
+      <div class="tab" data-tab="adjust">Penyesuaian</div>
+      <div class="tab" data-tab="worksheet">Kertas Kerja</div>
+      <div class="tab" data-tab="income">Laba Rugi</div>
+      <div class="tab" data-tab="equity">Perubahan Modal</div>
+      <div class="tab" data-tab="balance">Neraca</div>
+    </div>
+
+    <!-- CONTENT PANELS -->
+    <div class="content">
+      <!-- ACCOUNTS -->
+      <div class="panel active" id="accounts">
+        <div class="row">
+          <div class="col card">
+            <h3 style="margin-top:0">Buat Akun Baru</h3>
+            <label>Nama Akun</label>
+            <input id="newAccountName" placeholder="Contoh: Kas, Hutang Usaha, Modal Pemilik" />
+            <label>Tipe Akun</label>
+            <select id="newAccountType">
+              <option value="Asset">Asset</option>
+              <option value="Liability">Liability</option>
+              <option value="Equity">Equity</option>
+              <option value="Revenue">Revenue</option>
+              <option value="Expense">Expense</option>
+              <option value="Drawing">Drawing</option>
+            </select>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button onclick="createAccount()">Tambah Akun</button>
+              <button class="secondary" onclick="promptDeleteAccount()">Hapus Akun</button>
+              <button class="secondary" onclick="resetAll()" title="Reset semua data">Reset Semua</button>
+            </div>
+            <div class="small muted" style="margin-top:10px;">Akun tersedia (klik untuk copy nama):</div>
+            <div id="accountList" style="margin-top:8px;max-height:160px;overflow:auto"></div>
+            <div class="small muted" style="margin-top:8px">Tips: Nama akun unik (case-sensitive). Hapus akun yang tidak dipakai.</div>
+          </div>
+
+          <div class="col card">
+            <h3 style="margin-top:0">Petunjuk Pemakaian Lengkap</h3>
+            <div class="small muted">
+              <ol style="padding-left:18px;margin:6px 0;">
+                <li><b>Buat akun</b> yang diperlukan (Aset, Kewajiban, Modal, Pendapatan, Beban, Prive).</li>
+                <li>Pindah ke <b>Jurnal</b>: pilih akun debit, akun kredit, masukkan jumlah, lalu klik <b>Tambah Jurnal</b>.</li>
+                <li>Jika perlu memperhitungkan akhir periode: gunakan tab <b>Penyesuaian</b> (contoh: depresiasi, beban akrual).</li>
+                <li>Setelah jurnal & penyesuaian dimasukkan, buka <b>Kertas Kerja</b> dan klik <b>Generate Worksheet</b> — sistem akan menghitung TB, Adjustments, Adjusted Balances, IS & BS.</li>
+                <li>Periksa <b>Catatan Ketidakseimbangan</b> untuk tahu sisi yang kurang dan contoh akun penyumbang selisih.</li>
+                <li>Gunakan <b>Export CSV</b> untuk menyimpan worksheet sementara (file offline).</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOURNAL -->
+      <div class="panel" id="journal">
+        <div class="row">
+          <div class="col card">
+            <h3 style="margin-top:0">Tambah Jurnal Umum</h3>
+            <label>Tanggal (YYYY-MM-DD)</label>
+            <input id="jurnalDate" placeholder="2025-11-01 (opsional)" />
+            <label>Debit (akun)</label>
+            <select id="jDebit"></select>
+            <label>Kredit (akun)</label>
+            <select id="jKredit"></select>
+            <label>Jumlah (Rp)</label>
+            <input id="jAmount" type="number" placeholder="0" />
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button onclick="addJournalEntry()">Tambah Jurnal</button>
+              <button class="secondary" onclick="clearJournalForm()">Bersihkan</button>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div class="small muted">Jurnal Entries (klik ✏️ untuk edit, 🗑️ untuk hapus)</div>
+              <div class="table-scroll">
+                <table id="journalTable"><thead><tr><th>Tgl</th><th>Debit</th><th>Kredit</th><th class="right">Rp</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col card">
+            <h3 style="margin-top:0">Ringkasan Jurnal</h3>
+            <div id="journalSummary" class="small muted">Belum ada jurnal</div>
+            <div style="margin-top:12px">
+              <button class="secondary" onclick="copyAllJournal()">Salin semua jurnal (clipboard)</button>
+              <div class="small muted" style="margin-top:8px">Gunakan salin untuk backup manual sebelum reset.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADJUST -->
+      <div class="panel" id="adjust">
+        <div class="row">
+          <div class="col card">
+            <h3 style="margin-top:0">Tambah Jurnal Penyesuaian</h3>
+            <label>Debit (akun)</label>
+            <select id="aDebit"></select>
+            <label>Kredit (akun)</label>
+            <select id="aKredit"></select>
+            <label>Jumlah (Rp)</label>
+            <input id="aAmount" type="number" placeholder="0" />
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button onclick="addAdjustEntry()">Tambah Penyesuaian</button>
+              <button class="secondary" onclick="clearAdjustForm()">Bersihkan</button>
+            </div>
+
+            <div style="margin-top:12px;">
+              <div class="small muted">Adjusting Entries (klik ✏️ untuk edit, 🗑️ untuk hapus)</div>
+              <div class="table-scroll">
+                <table id="adjustTable"><thead><tr><th>Tgl</th><th>Debit</th><th>Kredit</th><th class="right">Rp</th><th>Aksi</th></tr></thead><tbody></tbody></table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col card">
+            <h3 style="margin-top:0">Catatan Penyesuaian</h3>
+            <div class="small muted">
+              Gunakan penyesuaian untuk mencatat yang belum ter-record di jurnal biasa: depresiasi, akrual, pendapatan tangguhan, koreksi persediaan, dll. Penyesuaian akan mempengaruhi kertas kerja & laporan akhir.
+            </div>
+            <div style="margin-top:12px">
+              <button class="secondary" onclick="suggestAdjustExamples()">Contoh Penyesuaian</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKSHEET -->
+      <div class="panel" id="worksheet">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <h3 style="margin:0">Kertas Kerja (Worksheet)</h3>
+            <div style="display:flex;gap:8px">
+              <button onclick="generateWorksheet()">Generate Worksheet</button>
+              <button class="secondary" onclick="downloadCSV()">Export CSV</button>
+              <button class="danger" onclick="resetAll()">Reset Semua</button>
+            </div>
+          </div>
+
+          <div class="table-scroll" style="margin-top:10px">
+            <table id="worksheetTable">
+              <thead>
+                <tr>
+                  <th>Akun</th><th>Type</th>
+                  <th class="right">TB Dr</th><th class="right">TB Cr</th>
+                  <th class="right">Adj Dr</th><th class="right">Adj Cr</th>
+                  <th class="right">AdjBal Dr</th><th class="right">AdjBal Cr</th>
+                  <th class="right">IS</th><th class="right">BS</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2">Total</td>
+                  <td id="tot_tb_dr" class="right">0</td><td id="tot_tb_cr" class="right">0</td>
+                  <td id="tot_adj_dr" class="right">0</td><td id="tot_adj_cr" class="right">0</td>
+                  <td id="tot_adjbal_dr" class="right">0</td><td id="tot_adjbal_cr" class="right">0</td>
+                  <td id="tot_is" class="right">0</td><td id="tot_bs" class="right">0</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div id="explain" class="status muted">Tekan <b>Generate Worksheet</b> untuk meng-update laporan.</div>
+
+          <div class="row" style="margin-top:12px">
+            <div class="col card">
+              <h4 style="margin-top:0">Laporan Laba Rugi</h4>
+              <div id="incomeStmt" class="small muted">Belum dihitung</div>
+            </div>
+            <div class="col card">
+              <h4 style="margin-top:0">Perubahan Modal</h4>
+              <div id="changeEquity" class="small muted">Belum dihitung</div>
+            </div>
+            <div class="col card">
+              <h4 style="margin-top:0">Neraca</h4>
+              <div id="balanceSheet" class="small muted">Belum dihitung</div>
+            </div>
+            <div class="col card">
+              <h4 style="margin-top:0">Catatan Ketidakseimbangan</h4>
+              <div id="imbalanceNote" class="small muted">—</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- INCOME -->
+      <div class="panel" id="income">
+        <div class="card">
+          <h3 style="margin-top:0">Laporan Laba Rugi (Detail)</h3>
+          <div id="incomeDetail" class="small muted">Tekan Generate Worksheet di tab Kertas Kerja terlebih dahulu.</div>
+        </div>
+      </div>
+
+      <!-- EQUITY -->
+      <div class="panel" id="equity">
+        <div class="card">
+          <h3 style="margin-top:0">Laporan Perubahan Modal (Detail)</h3>
+          <div id="equityDetail" class="small muted">Tekan Generate Worksheet di tab Kertas Kerja terlebih dahulu.</div>
+        </div>
+      </div>
+
+      <!-- BALANCE -->
+      <div class="panel" id="balance">
+        <div class="card">
+          <h3 style="margin-top:0">Neraca (Balance Sheet) Detail</h3>
+          <div id="balanceDetail" class="small muted">Tekan Generate Worksheet di tab Kertas Kerja terlebih dahulu.</div>
+        </div>
+      </div>
+
+    </div> <!-- content -->
+
+  </div> <!-- container -->
 
 <script>
-let debitList = [];
-let kreditList = [];
-let totalDebit = 0;
-let totalKredit = 0;
+/* ========== Data structures ========== */
+let accounts = [];         // {name,type}
+let journal = [];          // {id,date,debit,credit,amount}
+let adjust = [];           // {id,date,debit,credit,amount}
+let nextId = 1;
 
-function tambahDebit() {
-  const nama = document.getElementById('namaDebit').value.trim();
-  const nilai = parseFloat(document.getElementById('nilaiDebit').value);
-  if (!nama || isNaN(nilai) || nilai <= 0) { alert('Isi nama akun dan nilai dengan benar!'); return; }
+/* ========== Utilities ========== */
+const $ = id => document.getElementById(id);
+const formatRp = n => Number(n||0).toLocaleString('id-ID');
+const cssSafe = name => 'r_' + String(name).replace(/[^a-z0-9]/gi,'_');
 
-  debitList.push({nama, nilai});
-  const tabel = document.querySelector('#tabelDebit tbody');
-  const baris = tabel.insertRow();
-  baris.insertCell(0).textContent = nama;
-  baris.insertCell(1).textContent = nilai.toLocaleString('id-ID');
-  
-  totalDebit += nilai;
-  document.getElementById('totalDebit').textContent = totalDebit.toLocaleString('id-ID');
-  document.getElementById('namaDebit').value = '';
-  document.getElementById('nilaiDebit').value = '';
-  updateStatus();
+/* ========== TAB logic ========== */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=> {
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const tab = t.dataset.tab;
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+  });
+});
+
+/* ========== Account management ========== */
+function createAccount(){
+  const name = $('newAccountName').value.trim();
+  const type = $('newAccountType').value;
+  if(!name){ alert('Masukkan nama akun'); return; }
+  if(accounts.some(a=>a.name===name)){ alert('Akun sudah ada (gunakan nama unik)'); return; }
+  accounts.push({name,type});
+  $('newAccountName').value='';
+  renderAccountList(); refreshSelects();
 }
 
-function tambahKredit() {
-  const nama = document.getElementById('namaKredit').value.trim();
-  const nilai = parseFloat(document.getElementById('nilaiKredit').value);
-  if (!nama || isNaN(nilai) || nilai <= 0) { alert('Isi nama akun dan nilai dengan benar!'); return; }
-
-  kreditList.push({nama, nilai});
-  const tabel = document.querySelector('#tabelKredit tbody');
-  const baris = tabel.insertRow();
-  baris.insertCell(0).textContent = nama;
-  baris.insertCell(1).textContent = nilai.toLocaleString('id-ID');
-  
-  totalKredit += nilai;
-  document.getElementById('totalKredit').textContent = totalKredit.toLocaleString('id-ID');
-  document.getElementById('namaKredit').value = '';
-  document.getElementById('nilaiKredit').value = '';
-  updateStatus();
+function promptDeleteAccount(){
+  if(accounts.length===0){ alert('Belum ada akun'); return; }
+  const name = prompt('Ketik nama akun yang ingin dihapus (case-sensitive):');
+  if(!name) return;
+  const idx = accounts.findIndex(a=>a.name===name);
+  if(idx===-1){ alert('Akun tidak ditemukan'); return; }
+  if(!confirm(`Hapus akun "${name}"? Jurnal yang pakai akun ini tidak otomatis dihapus.`)) return;
+  accounts.splice(idx,1);
+  renderAccountList(); refreshSelects();
 }
 
-function updateStatus() {
-  const status = document.getElementById('status');
-  if (totalDebit === 0 && totalKredit === 0) { status.textContent = ''; return; }
-  
-  const selisih = totalDebit - totalKredit;
+function renderAccountList(){
+  const el = $('accountList');
+  if(accounts.length===0){ el.innerHTML = '<div class="muted">Belum ada akun</div>'; return; }
+  el.innerHTML = accounts.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #111">
+    <div style="cursor:pointer" onclick="copyToClipboard('${a.name}')">${a.name}</div>
+    <div class="acct-type">${a.type}</div>
+  </div>`).join('');
+}
 
-  if (Math.abs(selisih) < 1) {
-    status.innerHTML = "✅ Neraca Seimbang!";
-    status.style.color = "limegreen";
+function refreshSelects(){
+  const ids = ['jDebit','jKredit','aDebit','aKredit'];
+  ids.forEach(id=>{
+    const sel = $(id);
+    if(!sel) return;
+    sel.innerHTML = accounts.map(a=>`<option value="${a.name}">${a.name} — ${a.type}</option>`).join('');
+  });
+}
+
+/* ========== Journal management ========== */
+function addJournalEntry(){
+  if(accounts.length===0){ alert('Buat akun dulu'); return; }
+  const date = $('jurnalDate').value.trim() || new Date().toISOString().slice(0,10);
+  const debit = $('jDebit').value;
+  const credit = $('jKredit').value;
+  const amount = parseFloat($('jAmount').value);
+  if(!debit || !credit || isNaN(amount) || amount<=0){ alert('Lengkapi jurnal dengan akun & jumlah (Rp) yang benar'); return; }
+  journal.push({id: nextId++, date, debit, credit, amount});
+  clearJournalForm(); renderJournal(); updateJournalSummary();
+}
+
+function renderJournal(){
+  const tbody = $('journalTable').querySelector('tbody');
+  if(journal.length===0){ tbody.innerHTML = `<tr><td colspan="5" class="muted">Belum ada jurnal</td></tr>`; return; }
+  tbody.innerHTML = journal.map(e=>`<tr>
+    <td>${e.date}</td><td>${e.debit}</td><td>${e.credit}</td>
+    <td class="right">Rp ${formatRp(e.amount)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" onclick="editJournal(${e.id})">✏️</button>
+      <button class="btn-icon" onclick="deleteJournal(${e.id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+function editJournal(id){
+  const idx = journal.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  const e = journal[idx];
+  $('jurnalDate').value = e.date;
+  $('jDebit').value = e.debit;
+  $('jKredit').value = e.credit;
+  $('jAmount').value = e.amount;
+  if(confirm('Ambil entry ke form untuk diedit? (entry asli akan dihapus)')){
+    journal.splice(idx,1); renderJournal(); updateJournalSummary();
+  } else { clearJournalForm(); }
+}
+
+function deleteJournal(id){
+  if(!confirm('Hapus entry jurnal ini?')) return;
+  journal = journal.filter(x=>x.id!==id); renderJournal(); updateJournalSummary();
+}
+
+function clearJournalForm(){ $('jAmount').value=''; $('jurnalDate').value=''; }
+function updateJournalSummary(){
+  if(journal.length===0){ $('journalSummary').textContent='Belum ada jurnal'; return; }
+  const total = journal.reduce((s,e)=>s+e.amount,0);
+  $('journalSummary').innerHTML = `Total jurnal: <b>Rp ${formatRp(total)}</b> — ${journal.length} entry`;
+}
+
+/* ========== Adjust management ========== */
+function addAdjustEntry(){
+  if(accounts.length===0){ alert('Buat akun dulu'); return; }
+  const date = new Date().toISOString().slice(0,10);
+  const debit = $('aDebit').value;
+  const credit = $('aKredit').value;
+  const amount = parseFloat($('aAmount').value);
+  if(!debit || !credit || isNaN(amount) || amount<=0){ alert('Lengkapi penyesuaian dengan akun & jumlah'); return; }
+  adjust.push({id: nextId++, date, debit, credit, amount});
+  $('aAmount').value=''; renderAdjust();
+}
+
+function renderAdjust(){
+  const tbody = $('adjustTable').querySelector('tbody');
+  if(adjust.length===0){ tbody.innerHTML = `<tr><td colspan="5" class="muted">Belum ada penyesuaian</td></tr>`; return; }
+  tbody.innerHTML = adjust.map(e=>`<tr>
+    <td>${e.date}</td><td>${e.debit}</td><td>${e.credit}</td>
+    <td class="right">Rp ${formatRp(e.amount)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-icon" onclick="editAdjust(${e.id})">✏️</button>
+      <button class="btn-icon" onclick="deleteAdjust(${e.id})">🗑️</button>
+    </td>
+  </tr>`).join('');
+}
+
+function editAdjust(id){
+  const idx = adjust.findIndex(x=>x.id===id);
+  if(idx===-1) return;
+  const e = adjust[idx];
+  $('aDebit').value = e.debit;
+  $('aKredit').value = e.credit;
+  $('aAmount').value = e.amount;
+  if(confirm('Ambil penyesuaian ke form untuk diedit? (baris asli akan dihapus)')){
+    adjust.splice(idx,1); renderAdjust();
+  } else { $('aAmount').value=''; }
+}
+
+function deleteAdjust(id){
+  if(!confirm('Hapus entry penyesuaian ini?')) return;
+  adjust = adjust.filter(x=>x.id!==id); renderAdjust();
+}
+
+/* ========== Worksheet & Reports ========== */
+function generateWorksheet(){
+  if(accounts.length===0){ alert('Buat akun dulu'); return; }
+
+  // init per-account summary
+  const map = {};
+  accounts.forEach(a=> map[a.name] = {type:a.type, tbDr:0,tbCr:0,adjDr:0,adjCr:0});
+
+  // post journal
+  journal.forEach(e=>{
+    if(!map[e.debit] || !map[e.credit]) return;
+    map[e.debit].tbDr += e.amount;
+    map[e.credit].tbCr += e.amount;
+  });
+
+  // post adjust
+  adjust.forEach(e=>{
+    if(!map[e.debit] || !map[e.credit]) return;
+    map[e.debit].adjDr += e.amount;
+    map[e.credit].adjCr += e.amount;
+  });
+
+  // build rows and totals
+  const rows = [];
+  const totals = {tbDr:0,tbCr:0,adjDr:0,adjCr:0,adjbalDr:0,adjbalCr:0,isTotal:0,bsTotal:0};
+  for(const [name,v] of Object.entries(map)){
+    const net = (v.tbDr - v.tbCr) + (v.adjDr - v.adjCr);
+    const adjbalDr = net>0 ? net : 0;
+    const adjbalCr = net<0 ? Math.abs(net) : 0;
+    let isCol = 0, bsCol = 0;
+    if(v.type==='Revenue') isCol = adjbalCr;
+    if(v.type==='Expense') isCol = adjbalDr;
+    if(v.type==='Asset') bsCol = adjbalDr;
+    if(v.type==='Liability') bsCol = adjbalCr;
+    if(v.type==='Equity') bsCol = adjbalCr;
+    if(v.type==='Drawing') bsCol = adjbalDr;
+
+    rows.push({name,type:v.type,tbDr:v.tbDr,tbCr:v.tbCr,adjDr:v.adjDr,adjCr:v.adjCr,adjbalDr,adjbalCr,isCol,bsCol});
+    totals.tbDr += v.tbDr; totals.tbCr += v.tbCr;
+    totals.adjDr += v.adjDr; totals.adjCr += v.adjCr;
+    totals.adjbalDr += adjbalDr; totals.adjbalCr += adjbalCr;
+    totals.isTotal += isCol; totals.bsTotal += bsCol;
+  }
+
+  // render worksheet table
+  const tb = $('worksheetTable').querySelector('tbody');
+  tb.innerHTML = rows.map(r=>`<tr id="${cssSafe(r.name)}">
+    <td>${r.name}</td><td>${r.type}</td>
+    <td class="right">${formatRp(r.tbDr)}</td><td class="right">${formatRp(r.tbCr)}</td>
+    <td class="right">${formatRp(r.adjDr)}</td><td class="right">${formatRp(r.adjCr)}</td>
+    <td class="right">${formatRp(r.adjbalDr)}</td><td class="right">${formatRp(r.adjbalCr)}</td>
+    <td class="right">${formatRp(r.isCol)}</td><td class="right">${formatRp(r.bsCol)}</td>
+  </tr>`).join('');
+
+  // totals
+  $('tot_tb_dr').textContent = formatRp(totals.tbDr);
+  $('tot_tb_cr').textContent = formatRp(totals.tbCr);
+  $('tot_adj_dr').textContent = formatRp(totals.adjDr);
+  $('tot_adj_cr').textContent = formatRp(totals.adjCr);
+  $('tot_adjbal_dr').textContent = formatRp(totals.adjbalDr);
+  $('tot_adjbal_cr').textContent = formatRp(totals.adjbalCr);
+  $('tot_is').textContent = formatRp(totals.isTotal);
+  $('tot_bs').textContent = formatRp(totals.bsTotal);
+
+  // Income statement
+  const totalRevenue = rows.filter(r=>r.type==='Revenue').reduce((s,r)=>s+(r.isCol||0),0);
+  const totalExpense = rows.filter(r=>r.type==='Expense').reduce((s,r)=>s+(r.isCol||0),0);
+  const netIncome = totalRevenue - totalExpense;
+  $('incomeStmt').innerHTML = `Pendapatan: Rp ${formatRp(totalRevenue)}<br>Beban: Rp ${formatRp(totalExpense)}<br><b>Laba (Rugi) Bersih: Rp ${formatRp(netIncome)}</b>`;
+  $('incomeDetail').innerHTML = `<div class="small">Pendapatan: Rp ${formatRp(totalRevenue)}<br>Beban: Rp ${formatRp(totalExpense)}<br><b>Laba Bersih: Rp ${formatRp(netIncome)}</b></div>`;
+
+  // Equity change
+  const totalEquityAdj = rows.filter(r=>r.type==='Equity').reduce((s,r)=>s+(r.bsCol||0),0);
+  const totalDrawing = rows.filter(r=>r.type==='Drawing').reduce((s,r)=>s+(r.bsCol||0),0);
+  $('changeEquity').innerHTML = `Ekuitas (adjusted): Rp ${formatRp(totalEquityAdj)}<br>Drawing: Rp ${formatRp(totalDrawing)}<br><b>Perubahan Modal (Laba - Drawing): Rp ${formatRp(netIncome - totalDrawing)}</b>`;
+  $('equityDetail').innerHTML = `<div class="small">Modal (adjusted): Rp ${formatRp(totalEquityAdj)}<br>Drawing: Rp ${formatRp(totalDrawing)}<br><b>Perubahan Modal: Rp ${formatRp(netIncome - totalDrawing)}</b></div>`;
+
+  // Balance sheet
+  const totalAssets = rows.filter(r=>r.type==='Asset').reduce((s,r)=>s+(r.bsCol||0),0);
+  const totalLiabEq = rows.filter(r=>['Liability','Equity'].includes(r.type)).reduce((s,r)=>s+(r.bsCol||0),0);
+  $('balanceSheet').innerHTML = `Total Aset: Rp ${formatRp(totalAssets)}<br>Total Kewajiban+Ekuitas: Rp ${formatRp(totalLiabEq)}<br><b>Selisih: Rp ${formatRp(totalAssets - totalLiabEq)}</b>`;
+  $('balanceDetail').innerHTML = `<div class="small">Aset: Rp ${formatRp(totalAssets)}<br>Kewajiban+Ekuitas: Rp ${formatRp(totalLiabEq)}<br><b>Selisih: Rp ${formatRp(totalAssets - totalLiabEq)}</b></div>`;
+
+  // Imbalance notes & highlight
+  const assetsVsOthers = totalAssets - totalLiabEq;
+  const imbalanceEl = $('imbalanceNote');
+  // clear highlights
+  document.querySelectorAll('#worksheetTable tbody tr').forEach(tr=>tr.classList.remove('highlight-missing'));
+  if(Math.abs(assetsVsOthers) < 1 && Math.abs(netIncome) < 1){
+    $('explain').innerHTML = '<span class="ok">✅ Kertas Kerja & Laporan Seimbang.</span>';
+    imbalanceEl.innerHTML = '<span class="ok">Seimbang</span>';
   } else {
-    let message = '';
-    if (selisih > 0) {
-      message = `⚠️ Tidak Seimbang! Kekurangan di sisi Kredit: Rp ${selisih.toLocaleString('id-ID')}<br>Akun debit yang menyebabkan selisih: ${debitList.map(a=>a.nama).join(', ')}`;
+    let note = '';
+    if(assetsVsOthers > 0){
+      const candidates = rows.filter(r=>['Liability','Equity'].includes(r.type)).sort((a,b)=>(b.bsCol||0)-(a.bsCol||0));
+      const top = candidates.slice(0,5).map(a=>`${a.name} (Rp ${formatRp(a.bsCol)})`);
+      note = `<div class="bad">⚠️ Neraca tidak seimbang: Aset lebih besar sebesar Rp ${formatRp(assetsVsOthers)}.<br>Periksa akun Kewajiban/Ekuitas. Contoh akun terbesar: ${top.length? top.join(', '): '—'}</div>`;
+      candidates.slice(0,5).forEach(c=>{ const el=document.getElementById(cssSafe(c.name)); if(el) el.classList.add('highlight-missing'); });
     } else {
-      message = `⚠️ Tidak Seimbang! Kekurangan di sisi Debit: Rp ${Math.abs(selisih).toLocaleString('id-ID')}<br>Akun kredit yang menyebabkan selisih: ${kreditList.map(a=>a.nama).join(', ')}`;
+      const candidates = rows.filter(r=>r.type==='Asset').sort((a,b)=>(b.bsCol||0)-(a.bsCol||0));
+      const top = candidates.slice(0,5).map(a=>`${a.name} (Rp ${formatRp(a.bsCol)})`);
+      note = `<div class="bad">⚠️ Neraca tidak seimbang: Kewajiban+Ekuitas lebih besar sebesar Rp ${formatRp(Math.abs(assetsVsOthers))}.<br>Periksa akun Aset. Contoh akun terbesar: ${top.length? top.join(', '): '—'}</div>`;
+      candidates.slice(0,5).forEach(c=>{ const el=document.getElementById(cssSafe(c.name)); if(el) el.classList.add('highlight-missing'); });
     }
-    status.innerHTML = message;
-    status.style.color = "crimson";
+    $('explain').innerHTML = '<span class="bad">⚠️ Terdapat ketidakseimbangan — cek catatan di samping.</span>';
+    imbalanceEl.innerHTML = note;
   }
 }
 
-function resetSemua() {
-  debitList = [];
-  kreditList = [];
-  totalDebit = 0;
-  totalKredit = 0;
-  document.querySelector('#tabelDebit tbody').innerHTML = '';
-  document.getElementById('totalDebit').textContent = '0';
-  document.querySelector('#tabelKredit tbody').innerHTML = '';
-  document.getElementById('totalKredit').textContent = '0';
-  updateStatus();
+/* ========== Export CSV ========= */
+function downloadCSV(){
+  const rows = document.querySelectorAll('#worksheetTable tbody tr');
+  if(rows.length===0){ alert('Belum ada worksheet (Generate dulu).'); return; }
+  let csv = [['Akun','Type','TB Dr','TB Cr','Adj Dr','Adj Cr','AdjBal Dr','AdjBal Cr','IS','BS']];
+  rows.forEach(r=>{
+    const cols = r.querySelectorAll('td');
+    csv.push(Array.from(cols).map(c=>`"${c.textContent.replace(/"/g,'""').trim()}"`));
+  });
+  const csvContent = csv.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csvContent], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='worksheet.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 }
+
+/* ========== Reset ========= */
+function resetAll(){
+  if(!confirm('Hapus semua data (akun, jurnal, penyesuaian)?')) return;
+  accounts=[]; journal=[]; adjust=[]; nextId=1;
+  refreshAllDisplays();
+}
+
+/* ========== Edit/Delete helpers for Journal & Adjust handled above ========= */
+
+/* ========== Misc helpers ========== */
+function cssSafe(name){ return 'r_' + String(name).replace(/[^a-z0-9]/gi,'_'); }
+function copyToClipboard(text){
+  navigator.clipboard?.writeText(text).then(()=>alert('Nama akun disalin ke clipboard'), ()=>alert('Gagal salin'));
+}
+function copyAllJournal(){
+  if(journal.length===0){ alert('Belum ada jurnal'); return; }
+  const txt = journal.map(e=>`${e.date}\t${e.debit}\t${e.credit}\t${e.amount}`).join('\n');
+  navigator.clipboard?.writeText(txt).then(()=>alert('Jurnal disalin ke clipboard'), ()=>alert('Gagal salin'));
+}
+
+/* ========== Small UX suggestions ========== */
+function suggestAdjustExamples(){
+  alert(`Contoh penyesuaian:
+- Depresiasi: Debit Beban Depresiasi / Kredit Akumulasi Depresiasi
+- Beban gaji terhutang: Debit Beban Gaji / Kredit Hutang Gaji
+- Pendapatan diterima di muka: Debit Kas / Kredit Pendapatan Diterima Di Muka (lalu adjust ke pendapatan)
+`);
+}
+
+/* ========== Refresh & init UI ========= */
+function renderJournal(){ /* implemented above */ }
+function renderAdjust(){ /* implemented above */ }
+function renderAccountList(){ /* implemented above */ }
+function refreshSelects(){ /* implemented above */ }
+
+function refreshAllDisplays(){
+  renderAccountList(); renderJournal(); renderAdjust();
+  $('worksheetTable').querySelector('tbody').innerHTML='';
+  ['tot_tb_dr','tot_tb_cr','tot_adj_dr','tot_adj_cr','tot_adjbal_dr','tot_adjbal_cr','tot_is','tot_bs'].forEach(id=>$(id).textContent='0');
+  $('incomeStmt').textContent='Belum dihitung';
+  $('changeEquity').textContent='Belum dihitung';
+  $('balanceSheet').textContent='Belum dihitung';
+  $('imbalanceNote').textContent='—';
+  $('explain').innerHTML = 'Tekan <b>Generate Worksheet</b> untuk menghitung laporan otomatis.';
+  updateJournalSummary();
+  renderAccountList(); refreshSelects();
+}
+
+/* ========== Initialize with sample accounts to help start ========= */
+(function initDemo(){
+  if(accounts.length===0){
+    accounts = [
+      {name:'Kas', type:'Asset'},
+      {name:'Piutang Usaha', type:'Asset'},
+      {name:'Persediaan', type:'Asset'},
+      {name:'Hutang Usaha', type:'Liability'},
+      {name:'Hutang Bank', type:'Liability'},
+      {name:'Modal Pemilik', type:'Equity'},
+      {name:'Pendapatan Jasa', type:'Revenue'},
+      {name:'Beban Gaji', type:'Expense'},
+      {name:'Prive (Penarikan)', type:'Drawing'}
+    ];
+  }
+  refreshAllDisplays();
+})();
 </script>
 </body>
 </html>
